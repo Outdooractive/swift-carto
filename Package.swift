@@ -19,8 +19,6 @@ let package = Package(
         .trait(
             name: "EnableYAMLProjectFiles",
             description: "Adds YAML (`.yaml`/`.yml`) support to the MML project file loader."),
-        .default(
-            enabledTraits: ["EnableYAMLProjectFiles"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.8.2"),

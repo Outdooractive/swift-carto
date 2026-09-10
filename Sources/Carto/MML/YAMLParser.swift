@@ -35,7 +35,9 @@ enum YAMLParser {
     // MARK: - Node conversion
 
     private static func convert(
-        _ node: Yams.Node, path: [String], errors: inout [String],
+        _ node: Yams.Node,
+        path: [String],
+        errors: inout [String],
     )
     throws -> JSONValue? {
         switch node {
@@ -96,7 +98,9 @@ enum YAMLParser {
     }
 
     private static func convertMapping(
-        _ mapping: Yams.Node.Mapping, path: [String], errors: inout [String],
+        _ mapping: Yams.Node.Mapping,
+        path: [String],
+        errors: inout [String],
     )
     throws -> JSONValue {
         var members: [(String, JSONValue)] = []
@@ -160,7 +164,9 @@ enum YAMLParser {
     }
 
     private static func mergeSource(
-        _ node: Yams.Node, path: [String], errors: inout [String],
+        _ node: Yams.Node,
+        path: [String],
+        errors: inout [String],
     )
     throws -> [(String, JSONValue)] {
         guard let value = try convert(node, path: path, errors: &errors),

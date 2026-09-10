@@ -97,11 +97,13 @@ the API surface, and tests assert on them).
 ## Dependencies
 
 - **swift-argument-parser** 1.8.2+ — CLI only. With the `EnableYAMLProjectFiles`
-  package trait (enabled by default, see `Package.swift`), **Yams** is also a
-  dependency of the `Carto` library target; without it the library has **no
-  external dependencies**. YAML-specific code is guarded with
+  package trait (**opt-in**, see `Package.swift`), **Yams** is also a dependency
+  of the `Carto` library target; by default the library has **no external
+  dependencies**. YAML-specific code is guarded with
   `#if EnableYAMLProjectFiles` — both trait states must build and test green:
-  `swift test` and `swift test --disable-default-traits`.
+  `swift test` (trait off) and `swift test --traits EnableYAMLProjectFiles`.
+  Note: traits can only be enabled from the CLI; there is no reliable opt-out
+  from a default trait, which is why YAML support is opt-in.
 
 ## Build & test
 

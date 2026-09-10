@@ -170,17 +170,22 @@ struct Issue4DifferentialTests {
         let mmlJSON =
             "{\"srs\": \"+proj=merc\", \"Stylesheet\": [{\"id\": \"s.mss\", \"data\": "
                 + mssJSON + "}], \"Layer\": [{\"id\": \"world\"}]}"
-        let mml = try MML(data: mmlJSON, basedir: nil)
-        var renderer = Renderer()
-        let xml = try #require(
-            renderer.render(mml),
-
-            "\(name): render failed: \(renderer.messages.map(\.description).joined(separator: "; "))")
+        let xml = try #require(Self.render(mmlJSON), "\(name): render failed")
 
         #expect(
             Self.stylesBlock(xml) == Self.normalized(testCase.styles),
             "\(name): rule ordering mismatch",
         )
+    }
+
+    /// Renders the given MML JSON, returning `nil` when compilation failed
+    /// (rendering is mutating, so it happens here instead of inside
+    /// `#require`).
+    private static func render(_ mmlJSON: String) -> String? {
+        guard let mml = try? MML(data: mmlJSON, basedir: nil) else { return nil }
+
+        var renderer = Renderer()
+        return renderer.render(mml)
     }
 
     /// Whitespace-normalized multi-line string.

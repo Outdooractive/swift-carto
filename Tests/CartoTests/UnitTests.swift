@@ -163,7 +163,7 @@ struct UnitTests {
             env.inputs["test.mss"] = mss
             guard let root = try? MSSParser.parse(mss, env: env) else { return "PARSE ERROR" }
 
-            var localMessages = Messages()
+            let localMessages = Messages()
             var evaluator: Evaluator = .init(env: env, messages: localMessages)
             var compiler = Compiler(evaluator: evaluator)
             guard let definitions = try? compiler.flatten([root]) else { return "FLATTEN ERROR" }

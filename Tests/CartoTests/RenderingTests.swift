@@ -14,7 +14,7 @@ struct RenderingTests {
 
     @Test(arguments: {
         var fixtures = [
-            "complex_cascades", "field", "filters", "instance_names",
+            "complex_cascades", "field", "filters", "hsluv_colors", "instance_names",
             "partial_overrides", "simplevariabletest", "units", "zoomselector",
             "zoom_variables",
         ]

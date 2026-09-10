@@ -127,6 +127,83 @@ struct UnitTests {
         #expect(color.serialized() == "rgba(10, 20, 30, 0.5)")
     }
 
+    // MARK: - HSLuv perceptual colors (verified against node carto + hsluv 0.0.2)
+
+    @Test func `hsluv conversions`() {
+        // hsluv 0.0.2 reference values: hsluvToRgb([262.9, 100, 75]) with
+        // S/L on the 0–100 scale.
+        let inGamut = Color.HSLuv.hsluvToRGB([262.9, 100, 75]).map { $0 * 255 }
+        #expect(abs(inGamut[0] - 171.73265032) < 0.000001)
+        #expect(abs(inGamut[1] - 179.19456988) < 0.000001)
+        #expect(abs(inGamut[2] - 255.00000158) < 0.00001)
+
+        let back = Color.HSLuv.rgbToHSLuv([0.5, 0.6, 0.7])
+        #expect(abs(back[0] - 239.73887065827515) < 0.000001)
+        #expect(abs(back[1] - 34.41572153960916) < 0.000001)
+        #expect(abs(back[2] - 62.1403505996297) < 0.000001)
+    }
+
+    @Test func `perceptual color round trips`() {
+        let standard: Color = .init(h: 210, s: 0.5, l: 0.4)
+        let perceptual = standard.toPerceptual()
+        #expect(perceptual.perceptual)
+        let back = perceptual.toStandard()
+        #expect(!back.perceptual)
+        // Round-trip through RGB should land on the same color.
+        #expect(back.hexString == standard.hexString)
+    }
+
+    @Test func `perceptual color functions`() {
+        // Expected values from node carto 1.2.2 (chroma-js + hsluv 0.0.2).
+        let base: Color = .init(rgb: [51, 102, 153]) // #336699
+
+        func renderColor(_ expression: String) -> String {
+            let mss = "#world { line-color: \(expression); }"
+            var env: ParserEnv = .init(filename: "test.mss")
+            env.inputs["test.mss"] = mss
+            guard let root = try? MSSParser.parse(mss, env: env) else { return "PARSE ERROR" }
+
+            var localMessages = Messages()
+            var evaluator: Evaluator = .init(env: env, messages: localMessages)
+            var compiler = Compiler(evaluator: evaluator)
+            guard let definitions = try? compiler.flatten([root]) else { return "FLATTEN ERROR" }
+
+            var ruleCompiler = RuleCompiler(evaluator: compiler.evaluator)
+            var existing: [String: Int] = [:]
+            var color: Color?
+            for definition in definitions {
+                for compiled in ruleCompiler.compile(definition, existing: &existing) {
+                    for (_, properties) in compiled.symbolizers {
+                        for (_, rule) in properties {
+                            let evaluated = evaluator.evaluateValue(rule.value)
+                            if case let .color(c) = evaluated {
+                                color = c
+                            }
+                        }
+                    }
+                }
+            }
+            return color?.serialized() ?? "ERROR"
+        }
+
+        #expect(renderColor("hsluv(262.9, 1, 0.75)") == "#acb3ff")
+        #expect(renderColor("hsluv(262.9, 100, 75)") == "#ffffff") // clamped to s=l=1
+        #expect(renderColor("hsluva(262.9, 1, 0.75, 0.5)") == "rgba(172, 179, 255, 0.5)")
+        #expect(renderColor("lightenp(#336699, 10)") == "#4180be")
+        #expect(renderColor("darkenp(#336699, 10)") == "#254e76")
+        #expect(renderColor("saturatep(#336699, 20)") == "#0867a6")
+        #expect(renderColor("desaturatep(#336699, 20)") == "#45658c")
+        #expect(renderColor("fadeinp(#336699, 30)") == "#336699")
+        #expect(renderColor("fadeoutp(#336699, 30)") == "rgba(51, 102, 153, 0.7)")
+        #expect(renderColor("spinp(#336699, 45)") == "#9437b6")
+        #expect(renderColor("greyscalep(#336699)") == "#636363")
+        #expect(renderColor("huep(#336699)") == "ERROR") // dimension, not color
+        #expect(renderColor("lightnessp(#336699)") == "ERROR") // dimension, not color
+        #expect(renderColor("mix(#336699, hsluv(100, 50, 50), 50)") == "#99b3cc")
+
+        _ = base // documented input color
+    }
+
     // MARK: - Zoom masks
 
     @Test func `zoom masks`() {

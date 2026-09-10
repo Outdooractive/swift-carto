@@ -57,7 +57,10 @@ tools/                # differential test harnesses against node carto
 - **`Eval/Evaluator.swift`** — evaluates nodes against variable frames
   (carto's `ev(env)` chain). Frames hold variable name → `Rule`, innermost
   last. Also `Functions.swift` (color/builtin functions with less.js
-  semantics) and `Color.swift`/`Color+Hex.swift`.
+  semantics) and `Color.swift`/`Color+Hex.swift` — `Color` carries the
+  `perceptual` flag (carto's `tree.Color`), and the nested `Color.HSLuv`
+  enum is a port of hsluv 0.0.2 (the reference implementation carto uses)
+  for the perceptual color functions.
 - **`Style/Compiler.swift`** — flattens parse trees into `Definition`s
   (nested rulesets multiply their parent selectors), applies inheritance,
   sorts styles and folds them. Also `RuleCompiler.swift` (carto's

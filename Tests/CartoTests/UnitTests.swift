@@ -256,4 +256,107 @@ struct UnitTests {
         #expect(!Compiler.specificitySort(lowIndex, highIndex))
     }
 
+    // MARK: - YAML project files (carto's js-yaml semantics)
+
+    #if EnableYAMLProjectFiles
+    @Test func `yaml scalars`() throws {
+        // js-yaml 3.x (carto's parser) semantics: only true/false are
+        // booleans; yes/no/on/off stay strings.
+        let yaml = """
+        a: plain string
+        quoted: 'single quoted'
+        int: 42
+        octal: 010
+        hex: 0x1F
+        float: 1.5
+        exponent: 1e3
+        true_bool: true
+        false_bool: FALSE
+        yes_string: yes
+        on_string: on
+        null_tilde: ~
+        null_word: null
+        empty:
+        """
+        let value = try YAMLParser.parse(yaml)
+        let object = try #require(value.objectValue)
+        let keys = object.map(\.0)
+        #expect(keys == [
+            "a", "quoted", "int", "octal", "hex", "float", "exponent",
+            "true_bool", "false_bool", "yes_string", "on_string",
+            "null_tilde", "null_word", "empty",
+        ])
+        #expect(try #require(object.first { $0.0 == "a" }).1 == .string("plain string"))
+        #expect(try #require(object.first { $0.0 == "quoted" }).1 == .string("single quoted"))
+        #expect(try #require(object.first { $0.0 == "int" }).1 == .number(42))
+        #expect(try #require(object.first { $0.0 == "octal" }).1 == .number(8))
+        #expect(try #require(object.first { $0.0 == "hex" }).1 == .number(31))
+        #expect(try #require(object.first { $0.0 == "float" }).1 == .number(1.5))
+        #expect(try #require(object.first { $0.0 == "exponent" }).1 == .number(1000))
+        #expect(try #require(object.first { $0.0 == "true_bool" }).1 == .bool(true))
+        #expect(try #require(object.first { $0.0 == "false_bool" }).1 == .bool(false))
+        #expect(try #require(object.first { $0.0 == "yes_string" }).1 == .string("yes"))
+        #expect(try #require(object.first { $0.0 == "on_string" }).1 == .string("on"))
+        #expect(try #require(object.first { $0.0 == "null_tilde" }).1 == .null)
+        #expect(try #require(object.first { $0.0 == "null_word" }).1 == .null)
+        #expect(try #require(object.first { $0.0 == "empty" }).1 == .null)
+    }
+
+    @Test func `yaml anchors aliases and merge keys`() throws {
+        let yaml = """
+        base: &base
+          type: shape
+          file: common.shp
+        merged:
+          <<: *base
+          file: specific.shp
+        merged_list:
+          <<: [*base, *base]
+        alias_array: *base
+        """
+        let value = try YAMLParser.parse(yaml)
+        let object = try #require(value.objectValue)
+
+        let merged = try #require(object.first { $0.0 == "merged" }).1
+        #expect(merged["type"] == .string("shape"))
+        // Explicit keys win over merge keys.
+        #expect(merged["file"] == .string("specific.shp"))
+
+        let aliasArray = try #require(object.first { $0.0 == "alias_array" }).1
+        #expect(aliasArray["file"] == .string("common.shp"))
+    }
+
+    @Test func `yaml duplicate keys error`() {
+        // Yams' composer reports duplicate keys (js-yaml does the same).
+        #expect(throws: (any Error).self) {
+            _ = try YAMLParser.parse("a: 1\na: 2\n")
+        }
+    }
+
+    @Test func `yaml int scalars`() {
+        #expect(YAMLParser.parseInt("42") == 42)
+        #expect(YAMLParser.parseInt("+12") == 12)
+        #expect(YAMLParser.parseInt("-010") == -8)
+        #expect(YAMLParser.parseInt("0x1F") == 31)
+        #expect(YAMLParser.parseInt("0b101") == 5)
+        #expect(YAMLParser.parseInt("1_000") == 1000)
+        // js-yaml's sexagesimal integers.
+        #expect(YAMLParser.parseInt("1:30") == 90)
+        #expect(YAMLParser.parseInt("-1:30") == -90)
+        #expect(YAMLParser.parseInt("abc") == nil)
+        #expect(YAMLParser.parseInt("") == nil)
+    }
+
+    @Test func `yaml mml loads and resolves stylesheets`() throws {
+        // The zoomselector_yaml fixture loads the same project as its JSON twin.
+        let fixtureURL = Bundle.module.bundleURL.appendingPathComponent("Fixtures", isDirectory: true)
+        let mmlData = try String(
+            contentsOf: fixtureURL.appendingPathComponent("zoomselector_yaml.mml"), encoding: .utf8)
+        let mml = try MML(data: mmlData, basedir: fixtureURL)
+        #expect(mml.stylesheets.map(\.id) == ["zoomselector_yaml.mss"])
+        #expect(mml.layers.map(\.id) == ["world"])
+        #expect(mml.srs?.hasPrefix("+proj=merc") == true)
+    }
+    #endif
+
 }

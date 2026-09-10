@@ -15,6 +15,7 @@ A Swift port of Mapbox's archived [`carto`](https://github.com/mapbox/carto) com
   - [Features](#features)
   - [Notes](#notes)
   - [Requirements](#requirements)
+  - [Package traits](#package-traits)
   - [Installation with Swift Package Manager](#installation-with-swift-package-manager)
   - [Quick start](#quick-start)
 - [The Renderer API](#the-renderer-api)
@@ -44,7 +45,7 @@ A Swift port of Mapbox's archived [`carto`](https://github.com/mapbox/carto) com
 - mapnik-reference v3.0.22 property tables: validation, defaults, and per-property status
 - Style flattening with specificity sorting, inheritance and per-style zoom bookkeeping (carto's `renderer.js`)
 - Rule compilation to Mapnik XML with carto's `jsonToXML` semantics, including `filter-mode="first"` folding
-- MML loader for JSON/JSON5 project files with stylesheet file resolution
+- MML loader for JSON/JSON5 project files with stylesheet file resolution (YAML project files via the `EnableYAMLProjectFiles` trait)
 - `Renderer` is a `Sendable`-friendly value type; compile errors and warnings are returned as `Message` values
 - A drop-in `carto` CLI mirroring node carto's command line options
 
@@ -54,12 +55,27 @@ This package intentionally mirrors node carto 1.2.2's semantics exactly, includi
 
 - Only Mapnik XML output is produced; `-o json` output and carto's `renderMSS` debug API are not implemented.
 - Only mapnik-reference v3.0.22 semantics (node carto's default) are built in; per-version differences are not switchable.
-- `project.mml` is parsed as JSON/JSON5; carto also accepts YAML, but this is not implemented.
+- `project.mml` is parsed as JSON/JSON5; YAML project files are supported through the opt-in `EnableYAMLProjectFiles` package trait (see below).
 - Millstone resource localization never happens here — datasources pass through verbatim.
 
 ## Requirements
 
-This package requires Swift 6.3 or higher, and compiles on macOS (\>= macOS 15) and Linux. It has no external dependencies besides [swift-argument-parser][2] (used by the CLI only).
+This package requires Swift 6.3 or higher, and compiles on macOS (\>= macOS 15) and Linux. It has no external dependencies besides [swift-argument-parser][2] (used by the CLI only) and [Yams][14] (only when the `EnableYAMLProjectFiles` trait is enabled).
+
+## Package traits
+
+- `EnableYAMLProjectFiles` — enables YAML (`.yaml`/`.yml`) project file parsing in the MML loader. **Enabled by default.** Without it the `Carto` library target has zero external dependencies; with it, [Yams][14] is pulled in and `MML.init(data:basedir:)` falls back to YAML when JSON/JSON5 parsing fails (mirroring carto, which pipes every project file through `js-yaml`).
+
+```swift
+// Enable explicitly (replaces the default set):
+.package(url: "https://github.com/Outdooractive/swift-carto", from: "1.0.0", traits: [
+    .trait(name: "EnableYAMLProjectFiles"),
+]),
+```
+
+```sh
+swift test --traits EnableYAMLProjectFiles   # or --disable-default-traits to test without YAML
+```
 
 ## Installation with Swift Package Manager
 
@@ -274,7 +290,6 @@ The port covers most the CartoCSS surface and was verified against carto's own r
 - **`-o json` output** and the `Renderer.renderMSS` debug API: only Mapnik XML is produced.
 - **"Did you mean …?" suggestions**: unrecognized rules/functions produce the error without carto's edit-distance suggestion.
 - **Status warnings**: `deprecated`/`unstable`/`experimental` property statuses are in the reference tables but no warnings are emitted.
-- **YAML project files**: `project.mml` is parsed as JSON/JSON5; carto also accepts YAML.
 
 ## Partial
 
@@ -308,9 +323,12 @@ This package is MIT licensed and builds on third-party components with compatibl
 
 | Component | License | How it is used |
 | --------- | ------- | -------------- |
+| Component | License | How it is used |
+| --------- | ------- | -------------- |
 | [carto][8] | Apache-2.0 | The original node.js compiler this package ports; also the source of the rendering test corpus |
 | [mapnik-reference][9] | Apache-2.0 | Property tables (v3.0.22), vendored into `Sources/Carto/Style` |
 | [less.js][10] | Apache-2.0 | Color function semantics, reimplemented in Swift |
+| [Yams][14] | MIT | YAML project file parsing (with the `EnableYAMLProjectFiles` trait) |
 
 # Related packages
 
@@ -343,3 +361,4 @@ Thomas Rasch, Outdooractive
 [11]: https://github.com/Outdooractive/swift-stb-image "swift-stb-image"
 [12]: https://github.com/Outdooractive/gis-tools "gis-tools"
 [13]: https://github.com/Outdooractive/mvt-tools "mvt-tools"
+[14]: https://github.com/jpsim/Yams "Yams"

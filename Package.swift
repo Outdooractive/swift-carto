@@ -28,7 +28,10 @@ let package = Package(
         .target(
             name: "Carto",
             dependencies: [
-                .product(name: "Yams", package: "Yams"),
+                .product(
+                    name: "Yams",
+                    package: "Yams",
+                    condition: .when(traits: ["EnableYAMLProjectFiles"])),
             ]),
         .executableTarget(
             name: "CartoCLI",

@@ -2,6 +2,7 @@
 //  Created by Thomas Rasch, 2026.
 //
 
+#if EnableYAMLProjectFiles
 import Foundation
 import Yams
 
@@ -238,3 +239,4 @@ enum YAMLParser {
     }
 
 }
+#endif

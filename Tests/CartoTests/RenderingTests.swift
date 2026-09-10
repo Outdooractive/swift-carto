@@ -15,6 +15,7 @@ struct RenderingTests {
     @Test(arguments: [
         "complex_cascades", "field", "filters", "instance_names",
         "partial_overrides", "simplevariabletest", "units", "zoomselector",
+        "zoom_variables",
     ])
     func rendering(fixture: String) throws {
         let fixtureURL = Bundle.module
@@ -141,7 +142,9 @@ struct RenderingTests {
             while end < chars.count {
                 let c = chars[end]
                 if let quote = inQuote {
-                    if c == quote { inQuote = nil }
+                    if c == quote {
+                        inQuote = nil
+                    }
                 }
                 else if c == "\"" || c == "'" {
                     inQuote = c
@@ -157,7 +160,9 @@ struct RenderingTests {
             position = end + 1
 
             let selfClosing = tagText.hasSuffix("/")
-            if selfClosing { tagText = String(tagText.dropLast()) }
+            if selfClosing {
+                tagText = String(tagText.dropLast())
+            }
 
             let (name, attributes) = parseTag(
                 tagText.trimmingCharacters(in: .whitespacesAndNewlines))
@@ -238,7 +243,9 @@ struct RenderingTests {
         guard a.children.count == b.children.count else { return false }
 
         for (aChild, bChild) in zip(a.children, b.children) {
-            if !treesEqual(aChild, bChild) { return false }
+            if !treesEqual(aChild, bChild) {
+                return false
+            }
         }
         return true
     }

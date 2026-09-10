@@ -23,25 +23,30 @@ enum Zoom {
         24: 50, 25: 25, 26: 12.5,
     ]
 
-    /// Evaluate a zoom condition to a bitmask.
+    /// Evaluate a zoom condition to a bitmask (carto's `tree.Zoom.ev`):
+    /// the value is evaluated against the variable frames first, so
+    /// `[zoom >= @min_zoom]` works with variable (and computed) values.
     static func evaluate(
         op: Filter.Op,
         value: Node,
+        evaluator: inout Evaluator,
         messages: inout Messages,
         index: Int,
-        filename: String?
+        filename: String?,
     ) -> Int {
-        let stringValue: String = switch value {
+        let evaluated = evaluator.evaluate(value)
+        if evaluated.isUndefined {
+            // resolveVariable already reported the error.
+            return 0
+        }
+        let stringValue: String = switch evaluated {
         case let .dimension(d):
             formatNumber(d.value)
         default:
-            value.idString
+            evaluated.idString
         }
-        guard let parsed = Double(stringValue), let zoom = Int(exactly: parsed.rounded()) else {
-            messages.error(
-                "Only zoom levels between 0 and \(maxZoom) supported.", filename: filename, index: index)
-            return 0
-        }
+        // carto uses parseInt(..., 10): truncation, leading-number prefix.
+        let zoom = Self.parseInt(stringValue) ?? -1
 
         if zoom > maxZoom || zoom < 0 {
             messages.error(
@@ -76,6 +81,30 @@ enum Zoom {
         return zoom
     }
 
+    /// JavaScript `parseInt(string, 10)`: truncates at the first non-digit
+    /// (no rounding, no exponent handling), returns nil for NaN.
+    static func parseInt(_ string: String) -> Int? {
+        var characters = Substring(string).drop { $0 == " " || $0 == "\t" || $0 == "\n" }
+        // Optional sign.
+        var negative = false
+        if characters.first == "-" || characters.first == "+" {
+            negative = characters.first == "-"
+            characters = characters.dropFirst()
+        }
+        var value = 0
+        var count = 0
+        for c in characters {
+            guard c.isASCII, let digit = c.wholeNumberValue, digit <= 9 else { break }
+
+            value = value * 10 + digit
+            count += 1
+        }
+        if count == 0 {
+            return nil
+        }
+        return negative ? -value : value
+    }
+
     /// Scale-denominator conditions for a zoom bitmask (carto's
     /// `Zoom.toObject`): `MaxScaleDenominator` for the start, `Min` for the
     /// end, only when the mask is not "all".
@@ -85,7 +114,9 @@ enum Zoom {
             var start: Int?
             var end: Int?
             for i in 0 ... maxZoom where zoom & (1 << i) != 0 {
-                if start == nil { start = i }
+                if start == nil {
+                    start = i
+                }
                 end = i
             }
             if let start, start > 0 {

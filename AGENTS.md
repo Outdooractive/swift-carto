@@ -9,9 +9,12 @@ into Mapnik XML, for the `swift-mapnik`-based tile rendering pipeline.
 
 It mirrors node carto's semantics **exactly**, including the quirky parts
 (specificity sorting with descending source index, `filter-mode="first"`
-folding, the JS string-comparison quirks in `Filterset.addable`, per-style
-`existing` zoom bookkeeping shared across definitions, JavaScript
-`Number.toString` formatting and `parseInt` semantics for attribute values).
+folding, the JS string-comparison quirks in `Filterset.addable`, the
+element-*object*-identity comparison in `specificitySort` — equal-valued
+elements from different selectors sort stably, shared cloned elements fall
+through to the zoom comparison — per-style `existing` zoom bookkeeping
+shared across definitions, JavaScript `Number.toString` formatting and
+`parseInt` semantics for attribute values).
 When in doubt about any behavior, check the original at
 `reference/carto/` (a local carto checkout — see *Differential tests*).
 

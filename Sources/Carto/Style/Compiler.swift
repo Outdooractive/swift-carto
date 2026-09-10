@@ -239,10 +239,19 @@ struct Compiler {
             return a.elements.count > b.elements.count
         }
 
-        // Sort based on the alphabetic order of each element
+        // Sort based on the alphabetic order of each element. carto compares
+        // Element *objects* here: at the first pair of distinct objects it
+        // returns `localeCompare(a.value, b.value)` — 0 for equal values,
+        // which makes the comparator "order undefined" (the stable sort
+        // keeps flatten order). Only when the two definitions share the
+        // same element *objects* (nested ruleset clones reuse the parent's
+        // elements) does the loop continue to the zoom comparison.
         for (ae, be) in zip(a.elements, b.elements) {
-            if ae.value != be.value {
-                return ae.value < be.value
+            if ae.instanceID != be.instanceID {
+                if ae.value != be.value {
+                    return ae.value < be.value
+                }
+                return false
             }
         }
 

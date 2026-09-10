@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Synchronization
 
 /// A CartoCSS rule: a single property/value (or variable/value) combination,
 /// like `polygon-opacity: 1.0;` or `@opacity: 1.0;`.
@@ -85,6 +86,7 @@ struct Selector {
 
 }
 
+/// A parsed selector element: `#id`, `.class` or `*`.
 struct Element: Equatable {
 
     enum Kind: Equatable {
@@ -96,6 +98,14 @@ struct Element: Equatable {
     var value: String
     var kind: Kind
     var clean: String
+
+    /// Identity for carto's element-object comparison in `specificitySort`:
+    /// each parsed element is a distinct object, and clones share the same
+    /// objects (JS reference semantics). Two elements with the same
+    /// `instanceID` are the same parsed element propagated through clones.
+    let instanceID: Int
+
+    private static let nextInstanceID = Synchronization.Atomic<Int>(0)
 
     init(value: String) {
         let trimmed = value.trimmingCharacters(in: .whitespaces)
@@ -112,6 +122,7 @@ struct Element: Equatable {
             kind = .wildcard
             clean = trimmed
         }
+        instanceID = Self.nextInstanceID.add(1, ordering: .sequentiallyConsistent).newValue
     }
 
 }

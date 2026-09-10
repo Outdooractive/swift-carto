@@ -302,8 +302,6 @@ The port covers most the CartoCSS surface and was verified against carto's own r
 - **`colorize-alpha()`**: passes through as an image-filter call without argument validation (carto validates against the reference).
 - **Geometry-transform functions** (`matrix`, `translate`, `scale`, `rotate`, `skewX`, `skewY`): serialized verbatim; argument counts are not validated.
 
-**Known limitation** (see below): rule ordering for comma-separated selectors with different zoom+filter pairs sharing one block can differ from node carto.
-
 ## Out of scope by design
 
 - Millstone resource localization (carto's `-l/--localize`): downloading and localizing remote datasource files never happens here — datasources pass through verbatim.

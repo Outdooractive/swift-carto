@@ -15,8 +15,8 @@ struct RenderingTests {
     @Test(arguments: {
         var fixtures = [
             "complex_cascades", "field", "filters", "hsluv_colors", "instance_names",
-            "partial_overrides", "simplevariabletest", "units", "zoomselector",
-            "zoom_variables",
+            "issue4_order", "partial_overrides", "simplevariabletest", "units",
+            "zoomselector", "zoom_variables",
         ]
         #if EnableYAMLProjectFiles
         fixtures.append("zoomselector_yaml")

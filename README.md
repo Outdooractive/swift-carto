@@ -270,7 +270,6 @@ The port covers most the CartoCSS surface and was verified against carto's own r
 
 ## Missing
 
-- **Zoom conditions with variables** (`[zoom >= @min_zoom]`): carto evaluates variables inside zoom conditions; this port does not — the value must be a literal number.
 - **mapnik-reference version selection** (`--api`): only v3.0.22 semantics are built in (node carto's default). Per-version differences (e.g. `maxzoom` vs `minimum-scale-denominator` layer attributes, filter keyword lists) are not switchable.
 - **`-o json` output** and the `Renderer.renderMSS` debug API: only Mapnik XML is produced.
 - **"Did you mean …?" suggestions**: unrecognized rules/functions produce the error without carto's edit-distance suggestion.

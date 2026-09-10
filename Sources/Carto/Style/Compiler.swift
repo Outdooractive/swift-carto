@@ -187,7 +187,10 @@ struct Compiler {
         evaluator.popFrame()
     }
 
-    private func mergeAttachment(_ parent: String?, _ child: String?) -> String? {
+    private func mergeAttachment(
+        _ parent: String?,
+        _ child: String?
+    ) -> String? {
         if let parent, let child {
             return parent + "/" + child
         }
@@ -200,8 +203,12 @@ struct Compiler {
         var zoom = Zoom.all
         for condition in selector.zooms {
             let mask = Zoom.evaluate(
-                op: condition.op, value: condition.value, messages: &messages,
-                index: condition.index, filename: evaluator.env.filename)
+                op: condition.op,
+                value: condition.value,
+                evaluator: &evaluator,
+                messages: &messages,
+                index: condition.index,
+                filename: evaluator.env.filename)
             zoom &= mask
         }
         return zoom

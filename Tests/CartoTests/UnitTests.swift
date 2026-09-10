@@ -132,28 +132,82 @@ struct UnitTests {
     @Test func `zoom masks`() {
         #expect(Zoom.all == (1 << (Zoom.maxZoom + 1)) - 1)
         var messages = Messages()
+        var evaluator: Evaluator = .init(env: ParserEnv(), messages: messages)
         #expect(
             Zoom.evaluate(
                 op: .eq, value: .dimension(Dimension(value: 3, unit: nil)),
+                evaluator: &evaluator,
                 messages: &messages, index: 0, filename: nil) == 8,
         )
         #expect(
             Zoom.evaluate(
                 op: .gt, value: .dimension(Dimension(value: 2, unit: nil)),
+                evaluator: &evaluator,
                 messages: &messages, index: 0, filename: nil) == 0b11_1111_1111_1111_1111_1111_1000,
         )
         #expect(
             Zoom.evaluate(
                 op: .lte, value: .dimension(Dimension(value: 3, unit: nil)),
+                evaluator: &evaluator,
                 messages: &messages, index: 0, filename: nil) == 0b1111,
         )
+        #expect(
+            // carto's parseInt semantics: 6.7 truncates to 6.
+            Zoom.evaluate(
+                op: .gte, value: .dimension(Dimension(value: 6.7, unit: nil)),
+                evaluator: &evaluator,
+                messages: &messages, index: 0, filename: nil)
+                == Zoom.rangeMask(start: 6, end: Zoom.maxZoom),
+        )
+    }
+
+    @Test func `zoom conditions with variables`() {
+        // carto's tree.Zoom.ev evaluates the value against env.frames.
+        var messages = Messages()
+        var evaluator: Evaluator = .init(env: ParserEnv(), messages: messages)
+        let variable: Node = .variable(name: "@min_zoom", index: 0, filename: nil)
+        evaluator.pushFrame([
+            "@min_zoom": Rule(
+                name: "@min_zoom", value: Value(values: [.dimension(Dimension(value: 6, unit: nil))]),
+                index: 0, filename: nil),
+        ])
+        #expect(
+            Zoom.evaluate(
+                op: .gte, value: variable, evaluator: &evaluator,
+                messages: &messages, index: 0, filename: nil)
+                == Zoom.rangeMask(start: 6, end: Zoom.maxZoom),
+        )
+        #expect(
+            Zoom.evaluate(
+                op: .eq, value: variable, evaluator: &evaluator,
+                messages: &messages, index: 0, filename: nil) == 1 << 6,
+        )
+        // Computed variables are evaluated too (carto: `6 - 1` → 5).
+        let operation: Node = .operation(
+            Operation(
+                op: .subtract, lhs: .dimension(Dimension(value: 6, unit: nil)),
+                rhs: .dimension(Dimension(value: 1, unit: nil))))
+        #expect(
+            Zoom.evaluate(
+                op: .gt, value: operation, evaluator: &evaluator,
+                messages: &messages, index: 0, filename: nil)
+                == Zoom.rangeMask(start: 6, end: Zoom.maxZoom),
+        )
+        // Undefined variables produce an error message.
+        let missing = Zoom.evaluate(
+            op: .gte, value: .variable(name: "@nope", index: 0, filename: nil),
+            evaluator: &evaluator, messages: &messages, index: 0, filename: nil)
+        #expect(missing == 0)
+        #expect(messages.items.contains { $0.message.contains("@nope is undefined") })
     }
 
     @Test func `zoom scale denominators`() {
         // zoom=3 → Max 100000000, Min 50000000
         var messages = Messages()
+        var evaluator: Evaluator = .init(env: ParserEnv(), messages: messages)
         let mask = Zoom.evaluate(
             op: .eq, value: .dimension(Dimension(value: 3, unit: nil)),
+            evaluator: &evaluator,
             messages: &messages, index: 0, filename: nil)
         let conditions = Zoom.scaleDenominators(zoom: mask).map { $0.0 + "=" + $0.1 }
         #expect(conditions == ["MaxScaleDenominator=100000000", "MinScaleDenominator=50000000"])

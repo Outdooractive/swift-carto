@@ -7,6 +7,7 @@ import Foundation
 /// The CartoCSS compiler: loads an MML project, parses its stylesheets,
 /// and renders Mapnik XML — a Swift port of Mapbox's archived `carto`.
 public struct Renderer {
+
     /// Compile messages (errors/warnings) from the last render.
     public private(set) var messages: [Message] = []
 

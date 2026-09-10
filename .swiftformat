@@ -67,7 +67,6 @@
 --preserve-acronyms
 --preserve-decls
 --preserved-property-types Package
---property-types explicit
 --ranges spaced
 --self remove
 --self-required
@@ -110,5 +109,5 @@
 --xcode-indentation enabled
 --xctest-symbols
 --yoda-swap always
---disable blankLinesAtEndOfScope,blankLinesAtStartOfScope,trailingClosures,unusedArguments
+--disable blankLinesAtEndOfScope,blankLinesAtStartOfScope,propertyTypes,trailingClosures,unusedArguments
 --enable blankLineAfterSwitchCase,blankLinesAfterGuardStatements,blankLinesBetweenImports,isEmpty,noGuardInTests,preferSwiftTesting,redundantEquatable,redundantProperty,singlePropertyPerLine,sortSwitchCases,throwingTests,unusedPrivateDeclarations,wrapEnumCases,wrapMultilineFunctionChains

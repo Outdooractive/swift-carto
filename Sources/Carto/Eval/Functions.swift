@@ -99,13 +99,13 @@ enum BuiltinFunction: String, CaseIterable {
             return .color(Color(h: h, s: s, l: l, alpha: a))
 
         case .hsluv, .hsluva:
-            // Perceptual variant: not supported in the corpus; fall back to
-            // plain HSL math on the same arguments.
+            // carto's `hsluva`: the components are HSLuv values (s/l 0–1),
+            // stored as a perceptual color.
             let h = args.count > 0 ? args[0].percentNumberValue ?? 0 : 0
             let s = args.count > 1 ? args[1].percentNumberValue ?? 0 : 0
             let l = args.count > 2 ? args[2].percentNumberValue ?? 0 : 0
             let a = args.count > 3 ? args[3].percentNumberValue ?? 1 : 1
-            return .color(Color(h: h, s: s, l: l, alpha: a))
+            return .color(Color(h: h, s: s, l: l, alpha: a, perceptual: true))
 
         case .hue:
             guard let color = args.first?.color else { return invalid(&messages, index, filename) }
@@ -115,7 +115,8 @@ enum BuiltinFunction: String, CaseIterable {
         case .huep:
             guard let color = args.first?.color else { return invalid(&messages, index, filename) }
 
-            return .color(color)
+            let perceptual = color.toPerceptual()
+            return .dimension(Dimension(value: perceptual.h.rounded(), unit: nil))
 
         case .lightness, .saturation:
             guard let color = args.first?.color else { return invalid(&messages, index, filename) }
@@ -126,7 +127,12 @@ enum BuiltinFunction: String, CaseIterable {
         case .alpha, .lightnessp, .saturationp:
             guard let color = args.first?.color else { return invalid(&messages, index, filename) }
 
-            return .dimension(Dimension(value: color.alpha, unit: nil))
+            if self == .alpha {
+                return .dimension(Dimension(value: color.alpha, unit: nil))
+            }
+            let perceptual = color.toPerceptual()
+            let value = self == .saturationp ? perceptual.s : perceptual.l
+            return .dimension(Dimension(value: (value * 100).rounded(), unit: "%"))
 
         case .desaturate, .saturate:
             guard var color = args.first?.color, args.count > 1,
@@ -138,7 +144,14 @@ enum BuiltinFunction: String, CaseIterable {
             return .color(color)
 
         case .desaturatep, .saturatep:
-            return args.first ?? .undefined
+            guard let color = args.first?.color, args.count > 1,
+                  let amount = args[1].numberValue
+            else { return invalid(&messages, index, filename) }
+
+            var perceptual = color.toPerceptual()
+            let delta = amount / 100 * (self == .saturatep ? 1 : -1)
+            perceptual.s = Color.clamp(perceptual.s + delta)
+            return .color(perceptual)
 
         case .darken, .lighten:
             guard var color = args.first?.color, args.count > 1,
@@ -150,7 +163,14 @@ enum BuiltinFunction: String, CaseIterable {
             return .color(color)
 
         case .darkenp, .lightenp:
-            return args.first ?? .undefined
+            guard let color = args.first?.color, args.count > 1,
+                  let amount = args[1].numberValue
+            else { return invalid(&messages, index, filename) }
+
+            var perceptual = color.toPerceptual()
+            let delta = amount / 100 * (self == .lightenp ? 1 : -1)
+            perceptual.l = Color.clamp(perceptual.l + delta)
+            return .color(perceptual)
 
         case .fadein, .fadeout:
             guard var color = args.first?.color, args.count > 1,
@@ -162,7 +182,14 @@ enum BuiltinFunction: String, CaseIterable {
             return .color(color)
 
         case .fadeinp, .fadeoutp:
-            return args.first ?? .undefined
+            guard let color = args.first?.color, args.count > 1,
+                  let amount = args[1].numberValue
+            else { return invalid(&messages, index, filename) }
+
+            var perceptual = color.toPerceptual()
+            let delta = amount / 100 * (self == .fadeinp ? 1 : -1)
+            perceptual.alpha = Color.clamp(perceptual.alpha + delta)
+            return .color(perceptual)
 
         case .spin:
             guard var color = args.first?.color, args.count > 1,
@@ -177,13 +204,25 @@ enum BuiltinFunction: String, CaseIterable {
             return .color(color)
 
         case .spinp:
-            return args.first ?? .undefined
+            guard let color = args.first?.color, args.count > 1,
+                  let amount = args[1].numberValue
+            else { return invalid(&messages, index, filename) }
+
+            var perceptual = color.toPerceptual()
+            var hue = (perceptual.h + amount).truncatingRemainder(dividingBy: 360)
+            if hue < 0 {
+                hue += 360
+            }
+            perceptual.h = hue
+            return .color(perceptual)
 
         case .mix:
             guard let c1 = args.first?.color, args.count > 2, let c2 = args[1].color,
                   let weight = args[2].numberValue
             else { return invalid(&messages, index, filename) }
 
+            // carto's `mix`: the result is perceptual when either input is.
+            let perceptual = c1.perceptual || c2.perceptual
             let rgb1 = c1.rgb
             let rgb2 = c2.rgb
             let p = weight / 100.0
@@ -199,6 +238,14 @@ enum BuiltinFunction: String, CaseIterable {
                 rgb1[1] * w1 + rgb2[1] * w2,
                 rgb1[2] * w1 + rgb2[2] * w2,
             ]
+
+            if perceptual {
+                let hsluv = Color.HSLuv.rgbToHSLuv(rgb.map { $0 / 255 })
+                return .color(Color(
+                    h: hsluv[0], s: hsluv[1] / 100, l: hsluv[2] / 100, alpha: alpha,
+                    perceptual: true))
+            }
+
             let hsl = Color.rgbToHSL(rgb)
             return .color(Color(h: hsl.0.isNaN ? 0 : hsl.0, s: hsl.1, l: hsl.2, alpha: alpha))
 
@@ -209,7 +256,11 @@ enum BuiltinFunction: String, CaseIterable {
             return .color(color)
 
         case .greyscalep:
-            return args.first ?? .undefined
+            guard let color = args.first?.color else { return invalid(&messages, index, filename) }
+
+            var perceptual = color.toPerceptual()
+            perceptual.s = Color.clamp(perceptual.s - 1)
+            return .color(perceptual)
 
         case .blur, .edgeDetect, .emboss, .gray, .sharpen, .sobel, .xGradient, .yGradient:
             return .imageFilter(name: rawValue, args: [])

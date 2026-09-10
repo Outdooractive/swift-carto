@@ -41,6 +41,7 @@ A Swift port of Mapbox's archived [`carto`](https://github.com/mapbox/carto) com
 - Faithful port of carto 1.2.2, verified against carto's own rendering corpus (82/82 fixtures)
 - CartoCSS lexer/parser — a faithful port of carto's `parser.js`, as a chunked recursive descent parser
 - Variable frames and color functions with less.js semantics, including hex, RGB(A) and HSL output
+- HSLuv perceptual color functions (`hsluv()`, `hsluva()`, and the `*p` variants like `lightenp`, `spinp`, `greyscalep`), a port of the hsluv 0.0.2 reference implementation
 - Unit conversion for `m`, `mm`, `cm`, `in`, `pt` and `pc` to pixels at 90.714 ppi (carto's default)
 - mapnik-reference v3.0.22 property tables: validation, defaults, and per-property status
 - Style flattening with specificity sorting, inheritance and per-style zoom bookkeeping (carto's `renderer.js`)
@@ -297,7 +298,6 @@ The port covers most the CartoCSS surface and was verified against carto's own r
 
 ## Partial
 
-- **Perceptual color functions**: `hsluv()`, `hsluva()` and the `*p` variants (`lightenp`, `darkenp`, `saturatep`, `desaturatep`, `fadeinp`, `fadeoutp`, `spinp`, `greyscalep`, `huep`, `saturationp`, `lightnessp`) fall back to plain HSL math instead of the HSLuv perceptual color space.
 - **Value-type validation**: carto's `validValue` checks the declared type of every property value; this port validates `unsigned` (rounding), font values, keyword options, filter keywords and required properties, but lets most other value types through unvalidated.
 - **`colorize-alpha()`**: passes through as an image-filter call without argument validation (carto validates against the reference).
 - **Geometry-transform functions** (`matrix`, `translate`, `scale`, `rotate`, `skewX`, `skewY`): serialized verbatim; argument counts are not validated.
@@ -333,6 +333,7 @@ This package is MIT licensed and builds on third-party components with compatibl
 | [carto][8] | Apache-2.0 | The original node.js compiler this package ports; also the source of the rendering test corpus |
 | [mapnik-reference][9] | Apache-2.0 | Property tables (v3.0.22), vendored into `Sources/Carto/Style` |
 | [less.js][10] | Apache-2.0 | Color function semantics, reimplemented in Swift |
+| [hsluv][15] | MIT | HSLuv perceptual color space (the reference implementation, ported to Swift) |
 | [Yams][14] | MIT | YAML project file parsing (with the `EnableYAMLProjectFiles` trait) |
 
 # Related packages
@@ -367,3 +368,4 @@ Thomas Rasch, Outdooractive
 [12]: https://github.com/Outdooractive/gis-tools "gis-tools"
 [13]: https://github.com/Outdooractive/mvt-tools "mvt-tools"
 [14]: https://github.com/jpsim/Yams "Yams"
+[15]: https://www.hsluv.org/ "hsluv"

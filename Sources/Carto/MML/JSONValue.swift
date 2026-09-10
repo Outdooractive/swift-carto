@@ -45,32 +45,44 @@ public enum JSONValue: Sendable, Equatable {
     // MARK: - Accessors
 
     var isNull: Bool {
-        if case .null = self { return true }
+        if case .null = self {
+            return true
+        }
         return false
     }
 
     public var stringValue: String? {
-        if case let .string(value) = self { return value }
+        if case let .string(value) = self {
+            return value
+        }
         return nil
     }
 
     public var numberValue: Double? {
-        if case let .number(value) = self { return value }
+        if case let .number(value) = self {
+            return value
+        }
         return nil
     }
 
     public var boolValue: Bool? {
-        if case let .bool(value) = self { return value }
+        if case let .bool(value) = self {
+            return value
+        }
         return nil
     }
 
     public var arrayValue: [JSONValue]? {
-        if case let .array(value) = self { return value }
+        if case let .array(value) = self {
+            return value
+        }
         return nil
     }
 
     public var objectValue: [(String, JSONValue)]? {
-        if case let .object(value) = self { return value }
+        if case let .object(value) = self {
+            return value
+        }
         return nil
     }
 
@@ -132,7 +144,9 @@ public enum JSONValue: Sendable, Equatable {
             for (index, value) in values.enumerated() {
                 output += childPad
                 value.serialize(to: &output, indent: indent + 1)
-                if index < values.count - 1 { output += "," }
+                if index < values.count - 1 {
+                    output += ","
+                }
                 output += "\n"
             }
             output += pad + "]"
@@ -146,7 +160,9 @@ public enum JSONValue: Sendable, Equatable {
             for (index, member) in members.enumerated() {
                 output += childPad + Self.formatString(member.0) + ": "
                 member.1.serialize(to: &output, indent: indent + 1)
-                if index < members.count - 1 { output += "," }
+                if index < members.count - 1 {
+                    output += ","
+                }
                 output += "\n"
             }
             output += pad + "}"
@@ -156,7 +172,9 @@ public enum JSONValue: Sendable, Equatable {
     /// Format a number the way `JSON.stringify` does: integers without a
     /// decimal point, everything else in its shortest round-trip form.
     static func formatNumber(_ value: Double) -> String {
-        if value.isNaN || value.isInfinite { return "null" }
+        if value.isNaN || value.isInfinite {
+            return "null"
+        }
         if value == value.rounded(), abs(value) < 1e15 {
             return String(Int(value))
         }
@@ -193,14 +211,22 @@ public enum JSONValue: Sendable, Equatable {
 extension JSONValue {
 
     public var doubleValue: Double? {
-        if case let .number(value) = self { return value }
-        if case let .string(value) = self { return Double(value) }
+        if case let .number(value) = self {
+            return value
+        }
+        if case let .string(value) = self {
+            return Double(value)
+        }
         return nil
     }
 
     public var intValue: Int? {
-        if case let .number(value) = self { return Int(value) }
-        if case let .string(value) = self { return Int(value) }
+        if case let .number(value) = self {
+            return Int(value)
+        }
+        if case let .string(value) = self {
+            return Int(value)
+        }
         return nil
     }
 

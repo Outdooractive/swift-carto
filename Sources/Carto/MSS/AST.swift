@@ -187,7 +187,9 @@ final class Definition {
                 case .id:
                     id == element.clean
                 }
-                if !matches { return false }
+                if !matches {
+                    return false
+                }
             }
             matchCount += 1
             return true

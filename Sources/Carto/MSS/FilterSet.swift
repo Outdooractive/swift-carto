@@ -113,7 +113,9 @@ extension Node {
     }
 
     var isString: Bool {
-        if case .quoted = self { return true }
+        if case .quoted = self {
+            return true
+        }
         return false
     }
 
@@ -127,7 +129,9 @@ extension Node {
     }
 
     var isKeywordNull: Bool {
-        if case let .keyword(value) = self, value == "null" { return true }
+        if case let .keyword(value) = self, value == "null" {
+            return true
+        }
         return false
     }
 
@@ -399,11 +403,21 @@ struct FilterSet {
             if existing(.eq) != nil {
                 return equals(.eq) ? .redundant : .conflict
             }
-            if existing(.neq) != nil { return .conflict }
-            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) || valueIsNull { return .conflict }
-            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) || valueIsNull { return .conflict }
-            if compares(.gte, numeric: { $0 > $1 }, string: { $0 > $1 }) || valueIsNull { return .conflict }
-            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) || valueIsNull { return .conflict }
+            if existing(.neq) != nil {
+                return .conflict
+            }
+            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) || valueIsNull {
+                return .conflict
+            }
+            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) || valueIsNull {
+                return .conflict
+            }
+            if compares(.gte, numeric: { $0 > $1 }, string: { $0 > $1 }) || valueIsNull {
+                return .conflict
+            }
+            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) || valueIsNull {
+                return .conflict
+            }
             return .addable
 
         case .match:
@@ -413,11 +427,21 @@ struct FilterSet {
             if existing(.eq) != nil {
                 return equals(.eq) ? .conflict : .redundant
             }
-            if let e = existing(.neq), e.value.idString == valueString { return .redundant }
-            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) || valueIsNull { return .redundant }
-            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) || valueIsNull { return .redundant }
-            if compares(.gte, numeric: { $0 > $1 }, string: { $0 > $1 }) || valueIsNull { return .redundant }
-            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) || valueIsNull { return .redundant }
+            if let e = existing(.neq), e.value.idString == valueString {
+                return .redundant
+            }
+            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) || valueIsNull {
+                return .redundant
+            }
+            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) || valueIsNull {
+                return .redundant
+            }
+            if compares(.gte, numeric: { $0 > $1 }, string: { $0 > $1 }) || valueIsNull {
+                return .redundant
+            }
+            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) || valueIsNull {
+                return .redundant
+            }
             return .addable
 
         case .gt:
@@ -427,10 +451,18 @@ struct FilterSet {
                 }
                 return .redundant
             }
-            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) { return .conflict }
-            if compares(.lte, numeric: { $0 <= $1 }, string: { $0 <= $1 }) { return .conflict }
-            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .redundant }
-            if compares(.gte, numeric: { $0 > $1 }, string: { $0 > $1 }) { return .redundant }
+            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) {
+                return .conflict
+            }
+            if compares(.lte, numeric: { $0 <= $1 }, string: { $0 <= $1 }) {
+                return .conflict
+            }
+            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .redundant
+            }
+            if compares(.gte, numeric: { $0 > $1 }, string: { $0 > $1 }) {
+                return .redundant
+            }
             return .addable
 
         case .gte:
@@ -440,10 +472,18 @@ struct FilterSet {
                 }
                 return .redundant
             }
-            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) { return .conflict }
-            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) { return .conflict }
-            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .redundant }
-            if compares(.gte, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .redundant }
+            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) {
+                return .conflict
+            }
+            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) {
+                return .conflict
+            }
+            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .redundant
+            }
+            if compares(.gte, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .redundant
+            }
             return .addable
 
         case .lt:
@@ -453,10 +493,18 @@ struct FilterSet {
                 }
                 return .redundant
             }
-            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .conflict }
-            if compares(.gte, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .conflict }
-            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) { return .redundant }
-            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) { return .redundant }
+            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .conflict
+            }
+            if compares(.gte, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .conflict
+            }
+            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) {
+                return .redundant
+            }
+            if compares(.lte, numeric: { $0 < $1 }, string: { $0 < $1 }) {
+                return .redundant
+            }
             return .addable
 
         case .lte:
@@ -466,10 +514,18 @@ struct FilterSet {
                 }
                 return .redundant
             }
-            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .conflict }
-            if compares(.gte, numeric: { $0 >= $1 }, string: { $0 >= $1 }) { return .conflict }
-            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) { return .redundant }
-            if compares(.lte, numeric: { $0 <= $1 }, string: { $0 <= $1 }) { return .redundant }
+            if compares(.gt, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .conflict
+            }
+            if compares(.gte, numeric: { $0 >= $1 }, string: { $0 >= $1 }) {
+                return .conflict
+            }
+            if compares(.lt, numeric: { $0 <= $1 }, string: { $0 <= $1 }) {
+                return .redundant
+            }
+            if compares(.lte, numeric: { $0 <= $1 }, string: { $0 <= $1 }) {
+                return .redundant
+            }
             return .addable
         }
     }

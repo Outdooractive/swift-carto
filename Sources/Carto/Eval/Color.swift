@@ -43,11 +43,21 @@ public struct Color: Sendable, Equatable {
         /// The algorithm chroma-js uses (W3C formula).
         func hueToRGB(_ p: Double, _ q: Double, _ t: Double) -> Double {
             var t = t
-            if t < 0 { t += 1 }
-            if t > 1 { t -= 1 }
-            if t < 1.0 / 6.0 { return p + (q - p) * 6 * t }
-            if t < 1.0 / 2.0 { return q }
-            if t < 2.0 / 3.0 { return p + (q - p) * (2.0 / 3.0 - t) * 6 }
+            if t < 0 {
+                t += 1
+            }
+            if t > 1 {
+                t -= 1
+            }
+            if t < 1.0 / 6.0 {
+                return p + (q - p) * 6 * t
+            }
+            if t < 1.0 / 2.0 {
+                return q
+            }
+            if t < 2.0 / 3.0 {
+                return p + (q - p) * (2.0 / 3.0 - t) * 6
+            }
             return p
         }
 

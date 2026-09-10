@@ -181,7 +181,9 @@ struct MSSParser {
             if c == quote {
                 return end
             }
-            if c == "\n" || c == "\r" { return nil }
+            if c == "\n" || c == "\r" {
+                return nil
+            }
             end += 1
         }
         return nil
@@ -241,7 +243,9 @@ struct MSSParser {
 
         var nodes: [MSSNode] = []
         while true {
-            if i < input.count, input[i] == "}" { break }
+            if i < input.count, input[i] == "}" {
+                break
+            }
             if let node = try parseRule() {
                 nodes.append(node)
                 continue
@@ -297,7 +301,9 @@ struct MSSParser {
                 if input[end] == "*", input[end + 1] == "/" {
                     let text: String = .init(input[i ... end + 1])
                     i = end + 2
-                    if i < input.count, input[i] == "\n" { i += 1 }
+                    if i < input.count, input[i] == "\n" {
+                        i += 1
+                    }
                     skipWhitespace()
                     return CommentNode(text: text, silent: false)
                 }
@@ -339,7 +345,9 @@ struct MSSParser {
             while parseComment() != nil {
                 skipWhitespace()
             }
-            if switchToken(",") == nil { break }
+            if switchToken(",") == nil {
+                break
+            }
             skipWhitespace()
             while parseComment() != nil {
                 skipWhitespace()
@@ -368,7 +376,9 @@ struct MSSParser {
 
         var content: [MSSNode] = []
         while true {
-            if i < input.count, input[i] == "}" { break }
+            if i < input.count, input[i] == "}" {
+                break
+            }
 
             if let node = try parseRule() {
                 content.append(node)
@@ -431,7 +441,9 @@ struct MSSParser {
 
             if i < input.count {
                 let c = input[i]
-                if c == "{" || c == "}" || c == ";" || c == "," { break }
+                if c == "{" || c == "}" || c == ";" || c == "," {
+                    break
+                }
             }
         }
 
@@ -487,7 +499,9 @@ struct MSSParser {
             end += 1
             nameLength += 1
         }
-        if nameLength == 0 { return nil }
+        if nameLength == 0 {
+            return nil
+        }
         // Optional `/second`
         if end < input.count, input[end] == "/" {
             var subEnd = end + 1
@@ -557,7 +571,9 @@ struct MSSParser {
         guard i + literalChars.count <= input.count else { return false }
 
         for (offset, c) in literalChars.enumerated() {
-            if input[i + offset] != c { return false }
+            if input[i + offset] != c {
+                return false
+            }
         }
         i += literalChars.count
         skipWhitespace()
@@ -705,7 +721,9 @@ struct MSSParser {
                 skipWhitespace()
                 return content
             }
-            if c == "\n" { break }
+            if c == "\n" {
+                break
+            }
             content.append(c)
             end += 1
         }
@@ -797,7 +815,9 @@ struct MSSParser {
         var end = i
         var seenDigit = false
         var seenDot = false
-        if input[end] == "-" { end += 1 }
+        if input[end] == "-" {
+            end += 1
+        }
         while end < input.count {
             let ch = input[end]
             if isDigit(ch) {
@@ -906,7 +926,9 @@ struct MSSParser {
         guard end > i, end < input.count, input[end] == "(" else { return nil }
 
         let name: String = .init(input[i ..< end])
-        if name == "url" { return nil }
+        if name == "url" {
+            return nil
+        }
         i = end + 1
         skipWhitespace()
 
@@ -974,7 +996,9 @@ struct MSSParser {
         guard i < input.count else { return nil }
 
         let c = input[i]
-        if c == "." || c == "#" { return nil }
+        if c == "." || c == "#" {
+            return nil
+        }
 
         let savedI = i
         let savedMemo = memo
@@ -998,7 +1022,9 @@ struct MSSParser {
         while let expression = try parseExpression() {
             expressions.append(expression)
             skipWhitespace()
-            if switchToken(",") == nil { break }
+            if switchToken(",") == nil {
+                break
+            }
             skipWhitespace()
         }
 
@@ -1128,7 +1154,9 @@ struct MSSParser {
             guard i < input.count else { break }
 
             let c = input[i]
-            if c == ";" || c == "}" || c == "," || c == "]" || c == ")" { break }
+            if c == ";" || c == "}" || c == "," || c == "]" || c == ")" {
+                break
+            }
         }
 
         guard !entities.isEmpty else { return nil }
@@ -1229,20 +1257,40 @@ struct MSSParser {
     }
 
     private mutating func parseEntity() throws -> Node? {
-        if let call = try parseCallEntity() { return call }
-        if let literal = parseLiteralEntity() { return literal }
-        if let field = parseFieldEntity() { return field }
-        if let variable = parseVariableEntity() { return variable }
-        if let url = try parseURLEntity() { return url }
-        if let keyword = parseKeywordEntity() { return .keyword(keyword) }
+        if let call = try parseCallEntity() {
+            return call
+        }
+        if let literal = parseLiteralEntity() {
+            return literal
+        }
+        if let field = parseFieldEntity() {
+            return field
+        }
+        if let variable = parseVariableEntity() {
+            return variable
+        }
+        if let url = try parseURLEntity() {
+            return url
+        }
+        if let keyword = parseKeywordEntity() {
+            return .keyword(keyword)
+        }
         return nil
     }
 
     private mutating func parseLiteral() -> Node? {
-        if let dimension = parseDimensionEntity() { return dimension }
-        if let color = parseKeywordColorEntity() { return color }
-        if let hex = parseColorEntity() { return hex }
-        if let quoted = parseQuotedEntity() { return .quoted(quoted) }
+        if let dimension = parseDimensionEntity() {
+            return dimension
+        }
+        if let color = parseKeywordColorEntity() {
+            return color
+        }
+        if let hex = parseColorEntity() {
+            return hex
+        }
+        if let quoted = parseQuotedEntity() {
+            return .quoted(quoted)
+        }
         return nil
     }
 

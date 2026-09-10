@@ -42,11 +42,13 @@ struct RuleCompiler {
     /// zoom down; each pass emits one rule for the uncovered zoom bits.
     mutating func compile(
         _ definition: Definition,
-        existing: inout [String: Int]
+        existing: inout [String: Int],
     ) -> [CompiledRule] {
         var objects: [CompiledRule] = []
         let filterKey = definition.filters.idString
-        if existing[filterKey] == nil { existing[filterKey] = Zoom.all }
+        if existing[filterKey] == nil {
+            existing[filterKey] = Zoom.all
+        }
 
         // Universal properties (symbolizer '*': image-filters, comp-op,
         // opacity, ...) are handled as Style attributes (carto's
@@ -103,7 +105,9 @@ struct RuleCompiler {
                         }
                     }
                 }
-                if current == 0 { break }
+                if current == 0 {
+                    break
+                }
             }
             i += 1
         }
@@ -132,7 +136,9 @@ struct RuleCompiler {
         var symCount = 0
         for (key, properties) in compiled.symbolizers {
             let symbolizerName = key.split(separator: "/").last.map(String.init) ?? key
-            if symbolizerName == "*" { continue }
+            if symbolizerName == "*" {
+                continue
+            }
             symCount += 1
 
             if let failure = requiredFailure(symbolizer: symbolizerName, properties: properties) {
@@ -213,7 +219,9 @@ struct RuleCompiler {
                 attributes[property.xmlName] = serialized
             }
 
-            if doNotSerialize { continue }
+            if doNotSerialize {
+                continue
+            }
 
             var element = XMLNode.Element(name: symbolizer, attributes: attributes)
             if let content {
@@ -311,7 +319,7 @@ struct RuleCompiler {
         _ node: Node,
         _ messages: inout Messages,
         _ filename: String?,
-        _ index: Int
+        _ index: Int,
     ) -> String {
         switch node {
         case let .dimension(d):

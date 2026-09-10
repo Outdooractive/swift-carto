@@ -26,7 +26,9 @@ struct Evaluator {
     }
 
     mutating func popFrame() {
-        if !frames.isEmpty { frames.removeLast() }
+        if !frames.isEmpty {
+            frames.removeLast()
+        }
     }
 
     // MARK: - Node evaluation
@@ -273,7 +275,9 @@ extension Node {
     }
 
     var isColor: Bool {
-        if case .color = self { return true }
+        if case .color = self {
+            return true
+        }
         return false
     }
 
@@ -319,8 +323,12 @@ extension Node {
 /// values carto emits: integers without decimals, shortest round-trip
 /// otherwise.
 func formatNumber(_ value: Double) -> String {
-    if value.isNaN { return "NaN" }
-    if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
+    if value.isNaN {
+        return "NaN"
+    }
+    if value.isInfinite {
+        return value > 0 ? "Infinity" : "-Infinity"
+    }
     if value == value.rounded() && abs(value) < 1e21 {
         // JS prints integers without decimal point
         if abs(value) < 9_007_199_254_740_992 {

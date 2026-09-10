@@ -24,7 +24,9 @@ indirect enum Node {
     case undefined
 
     var isUndefined: Bool {
-        if case .undefined = self { return true }
+        if case .undefined = self {
+            return true
+        }
         return false
     }
 

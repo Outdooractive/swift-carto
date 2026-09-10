@@ -15,12 +15,24 @@ let package = Package(
             name: "carto",
             targets: ["CartoCLI"]),
     ],
+    traits: [
+        .trait(
+            name: "EnableYAMLProjectFiles",
+            description: "Adds YAML (`.yaml`/`.yml`) support to the MML project file loader."),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.8.2"),
+        .package(url: "https://github.com/jpsim/Yams", from: "6.0.1"),
     ],
     targets: [
         .target(
-            name: "Carto"),
+            name: "Carto",
+            dependencies: [
+                .product(
+                    name: "Yams",
+                    package: "Yams",
+                    condition: .when(traits: ["EnableYAMLProjectFiles"])),
+            ]),
         .executableTarget(
             name: "CartoCLI",
             dependencies: [

@@ -63,9 +63,13 @@ tools/                # differential test harnesses against node carto
   sorts styles and folds them. Also `RuleCompiler.swift` (carto's
   `Definition.toObject` zoom-splitting into `CompiledRule`s) and
   `Reference.swift` (vendored mapnik-reference v3.0.22 property tables).
-- **`MML/MML.swift` + `JSONParser.swift`/`JSONValue.swift`** — parses
+- **`MML/MML.swift` + `JSONParser.swift`/`JSONValue.swift`/`YAMLParser.swift`** — parses
   `project.mml` as JSON/JSON5, resolves `@style.mss` references against
-  `basedir`, keeps unknown members in `rawMembers` for pass-through. Layer
+  `basedir`, keeps unknown members in `rawMembers` for pass-through. YAML
+  project files are supported through the `EnableYAMLProjectFiles` package
+  trait (`YAMLParser` bridges Yams' node trees to `JSONValue`, mirroring
+  js-yaml 3.x scalar semantics: only true/false booleans, octal/hex/
+  sexagesimal integers, merge keys, duplicate keys rejected). Layer
   datasources pass through verbatim — no millstone localization, no
   downloading of remote resources.
 - **`CartoCLI/CartoCLI.swift`** — argument-parser CLI mirroring node carto's
@@ -92,8 +96,14 @@ the API surface, and tests assert on them).
 
 ## Dependencies
 
-- **swift-argument-parser** 1.8.2+ — CLI only. The `Carto` library target
-  has **no external dependencies**.
+- **swift-argument-parser** 1.8.2+ — CLI only. With the `EnableYAMLProjectFiles`
+  package trait (**opt-in**, see `Package.swift`), **Yams** is also a dependency
+  of the `Carto` library target; by default the library has **no external
+  dependencies**. YAML-specific code is guarded with
+  `#if EnableYAMLProjectFiles` — both trait states must build and test green:
+  `swift test` (trait off) and `swift test --traits EnableYAMLProjectFiles`.
+  Note: traits can only be enabled from the CLI; there is no reliable opt-out
+  from a default trait, which is why YAML support is opt-in.
 
 ## Build & test
 
@@ -103,6 +113,10 @@ Builds on macOS (≥ macOS 15) and Linux with Swift 6.3+:
 swift build           # build library + CLI
 swift test            # run tests (Swift Testing): rendering fixtures + unit tests
 ```
+
+In the development container `CC` defaults to `gcc`, which rejects Swift's
+`-target`/`-fblocks` flags — use the toolchain's clang for Yams' C sources:
+`CC=clang CXX=clang++ swift build`.
 
 ### Differential tests
 

@@ -189,7 +189,7 @@ struct Compiler {
 
     private func mergeAttachment(
         _ parent: String?,
-        _ child: String?
+        _ child: String?,
     ) -> String? {
         if let parent, let child {
             return parent + "/" + child
@@ -221,13 +221,23 @@ struct Compiler {
         let asx = a.specificity
         let bsx = b.specificity
 
-        if asx[0] != bsx[0] { return asx[0] > bsx[0] }
-        if asx[1] != bsx[1] { return asx[1] > bsx[1] }
-        if asx[2] != bsx[2] { return asx[2] > bsx[2] }
-        if bsx[3] != asx[3] { return bsx[3] < asx[3] }
+        if asx[0] != bsx[0] {
+            return asx[0] > bsx[0]
+        }
+        if asx[1] != bsx[1] {
+            return asx[1] > bsx[1]
+        }
+        if asx[2] != bsx[2] {
+            return asx[2] > bsx[2]
+        }
+        if bsx[3] != asx[3] {
+            return bsx[3] < asx[3]
+        }
 
         // The definition with the most elements is 'larger'
-        if a.elements.count != b.elements.count { return a.elements.count > b.elements.count }
+        if a.elements.count != b.elements.count {
+            return a.elements.count > b.elements.count
+        }
 
         // Sort based on the alphabetic order of each element
         for (ae, be) in zip(a.elements, b.elements) {
@@ -236,7 +246,9 @@ struct Compiler {
             }
         }
 
-        if a.zoom != b.zoom { return a.zoom > b.zoom }
+        if a.zoom != b.zoom {
+            return a.zoom > b.zoom
+        }
 
         return false
     }

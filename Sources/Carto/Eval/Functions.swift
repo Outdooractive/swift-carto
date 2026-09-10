@@ -71,7 +71,7 @@ enum BuiltinFunction: String, CaseIterable {
         _ args: [Node],
         _ messages: inout Messages,
         _ index: Int,
-        _ filename: String?
+        _ filename: String?,
     ) -> Node {
         if let arity, args.count < arity {
             messages.error(
@@ -83,7 +83,9 @@ enum BuiltinFunction: String, CaseIterable {
         switch self {
         case .rgb, .rgba:
             let numbers = args.map(\.percentNumberValue)
-            if numbers.contains(nil) { return invalid(&messages, index, filename) }
+            if numbers.contains(nil) {
+                return invalid(&messages, index, filename)
+            }
             let alpha = self == .rgba ? (args.count > 3 ? args[3].numberValue ?? 1 : 1) : 1
             _ = numbers.compactMap(\.self).prefix(3).map { max(0, min($0, 255)) }
             let hsl = Color.rgbToHSL(Array(clampedRGB(args)))
@@ -168,7 +170,9 @@ enum BuiltinFunction: String, CaseIterable {
             else { return invalid(&messages, index, filename) }
 
             var hue = (color.h + amount).truncatingRemainder(dividingBy: 360)
-            if hue < 0 { hue += 360 }
+            if hue < 0 {
+                hue += 360
+            }
             color.h = hue
             return .color(color)
 
@@ -249,8 +253,12 @@ extension Node {
         if case let .dimension(d) = self {
             return d.value
         }
-        if case .color = self { return nil }
-        if case let .quoted(s) = self { return Double(s) }
+        if case .color = self {
+            return nil
+        }
+        if case let .quoted(s) = self {
+            return Double(s)
+        }
         return nil
     }
 
@@ -263,7 +271,9 @@ extension Node {
     }
 
     var color: Color? {
-        if case let .color(c) = self { return c }
+        if case let .color(c) = self {
+            return c
+        }
         return nil
     }
 

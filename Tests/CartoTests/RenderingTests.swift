@@ -12,11 +12,17 @@ import Testing
 /// text content must match; formatting/CDATA/entity differences do not.
 struct RenderingTests {
 
-    @Test(arguments: [
-        "complex_cascades", "field", "filters", "instance_names",
-        "partial_overrides", "simplevariabletest", "units", "zoomselector",
-        "zoom_variables",
-    ])
+    @Test(arguments: {
+        var fixtures = [
+            "complex_cascades", "field", "filters", "instance_names",
+            "partial_overrides", "simplevariabletest", "units", "zoomselector",
+            "zoom_variables",
+        ]
+        #if EnableYAMLProjectFiles
+        fixtures.append("zoomselector_yaml")
+        #endif
+        return fixtures
+    }())
     func rendering(fixture: String) throws {
         let fixtureURL = Bundle.module
             .bundleURL

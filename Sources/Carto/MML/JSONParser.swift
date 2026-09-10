@@ -345,7 +345,9 @@ public struct JSONParser: Sendable {
 
         var text: String = .init(decoding: input[start ..< position], as: UTF8.self)
         // `Double` accepts "1e5" but not "1e+5" in all locales; normalize.
-        if text.hasPrefix("+") { text.removeFirst() }
+        if text.hasPrefix("+") {
+            text.removeFirst()
+        }
         guard let value = Double(text) else {
             throw error("Invalid number '\(text)'")
         }

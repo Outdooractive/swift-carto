@@ -66,7 +66,9 @@ final class Messages: @unchecked Sendable {
 
     func add(_ message: Message) {
         // Deduplicate identical messages (carto does the same).
-        if items.contains(message) { return }
+        if items.contains(message) {
+            return
+        }
         items.append(message)
     }
 
@@ -96,7 +98,7 @@ final class Messages: @unchecked Sendable {
 
     static func lineColumn(
         input: String?,
-        index: Int?
+        index: Int?,
     ) -> (Int, Int) {
         guard let input, let index, index >= 0, index <= input.count else { return (-1, -1) }
 

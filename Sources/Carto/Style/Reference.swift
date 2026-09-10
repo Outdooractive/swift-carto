@@ -529,8 +529,12 @@ extension Reference {
         var required: [String: [String]] = [:]
         for property in properties {
             result[property.css] = property
-            if !order.contains(property.symbolizer) { order.append(property.symbolizer) }
-            if property.required { required[property.symbolizer, default: []].append(property.css) }
+            if !order.contains(property.symbolizer) {
+                order.append(property.symbolizer)
+            }
+            if property.required {
+                required[property.symbolizer, default: []].append(property.css)
+            }
         }
         propertiesByCSS = result
         symbolizerOrder = order

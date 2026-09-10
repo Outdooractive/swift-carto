@@ -267,7 +267,9 @@ public struct Renderer {
                     if case let .keyword(value) = evaluated, value == "none" {
                         continue
                     }
-                    if seenFilterIds.contains(rule.id) { continue }
+                    if seenFilterIds.contains(rule.id) {
+                        continue
+                    }
                     seenFilterIds.insert(rule.id)
                     // carto passes sep=',' — comma-separated entities join
                     // without spaces.
@@ -303,10 +305,18 @@ public struct Renderer {
         }
 
         var result: [String: String] = [:]
-        if let compOp { result["comp-op"] = compOp }
-        if let opacity { result["opacity"] = opacity }
-        if !imageFilters.isEmpty { result["image-filters"] = imageFilters.joined(separator: ",") }
-        if let imageFiltersInflate { result["image-filters-inflate"] = imageFiltersInflate }
+        if let compOp {
+            result["comp-op"] = compOp
+        }
+        if let opacity {
+            result["opacity"] = opacity
+        }
+        if !imageFilters.isEmpty {
+            result["image-filters"] = imageFilters.joined(separator: ",")
+        }
+        if let imageFiltersInflate {
+            result["image-filters-inflate"] = imageFiltersInflate
+        }
         if !directImageFilters.isEmpty {
             result["direct-image-filters"] = directImageFilters.joined(separator: ",")
         }
@@ -405,8 +415,12 @@ public struct Renderer {
             guard let value else { return }
 
             // carto skips falsy values (empty strings, false, null) unless 0.
-            if case let .string(s) = value, s.isEmpty { return }
-            if case .bool(false) = value { return }
+            if case let .string(s) = value, s.isEmpty {
+                return
+            }
+            if case .bool(false) = value {
+                return
+            }
             // Strings serialize as CDATA; numbers/bools/arrays as plain text
             // (carto's jsonToXML).
             let stringValue: String

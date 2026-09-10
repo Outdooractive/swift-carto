@@ -118,7 +118,8 @@ public struct MML: Sendable {
     /// them under the layer's own properties).
     public var globalProperties: [String: [(String, JSONValue)]]
 
-    /// Load an MML document from its JSON representation. Relative
+    /// Load an MML document from its JSON (or, with the
+    /// `EnableYAMLProjectFiles` trait, YAML) representation. Relative
     /// stylesheet filenames are resolved against `basedir`.
     public init(data: String, basedir: URL?) throws {
         let json: JSONValue
@@ -126,7 +127,13 @@ public struct MML: Sendable {
             json = try JSONParser.parse(data)
         }
         catch {
+            #if EnableYAMLProjectFiles
+            // carto pipes every project file through js-yaml's `safeLoad`
+            // (YAML is a superset of JSON); fall back to the YAML parser.
+            json = try YAMLParser.parse(data)
+            #else
             throw CartoError("carto: \(error)")
+            #endif
         }
 
         guard case let .object(members) = json else {

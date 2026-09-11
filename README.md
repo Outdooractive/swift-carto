@@ -7,7 +7,7 @@
 
 # Carto
 
-A Swift port of Mapbox's archived [`carto`](https://github.com/mapbox/carto) compiler: it compiles [CartoCSS](https://cartocss.readthedocs.io/) stylesheets (`.mss`) together with a TileMill project file (`project.mml`) into Mapnik XML, for the `swift-mapnik`-based tile rendering pipeline.
+A Swift port of Mapbox's archived [`carto`](https://github.com/mapbox/carto) compiler: it compiles [CartoCSS](https://cartocss.readthedocs.io/) stylesheets (`.mss`) together with a TileMill project file (`project.mml`) into Mapnik XML, for the [`swift-mapnik`][16]-based tile rendering pipeline.
 
 ## Table of Contents
 
@@ -339,6 +339,7 @@ This package is MIT licensed and builds on third-party components with compatibl
 - [swift-stb-image][11]: Swift wrapper around stb_image/stb_image_write and libwebp for reading and writing PNG, JPG and WebP images
 - [gis-tools][12]: GIS tools for Swift, including a GeoJSON implementation and many algorithms
 - [mvt-tools][13]: Vector tiles reader/writer for Swift
+- [swift-mapnik][16]: Mapnik-style tile rendering for Swift, the target of the XML this package produces
 
 # Contributing
 
@@ -367,3 +368,4 @@ Thomas Rasch, Outdooractive
 [13]: https://github.com/Outdooractive/mvt-tools "mvt-tools"
 [14]: https://github.com/jpsim/Yams "Yams"
 [15]: https://www.hsluv.org/ "hsluv"
+[16]: https://github.com/Outdooractive/swift-mapnik "swift-mapnik"
